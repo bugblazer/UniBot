@@ -8,8 +8,6 @@ const sendBtn = document.getElementById("sendBtn");
 const chatbox = document.getElementById("chatbox");
 const themeToggle = document.getElementById("themeToggle");
 const adminLoginBtn = document.getElementById("adminLogin");
-const statusIndicator = document.getElementById("statusIndicator");
-const connectionStatus = document.getElementById("connectionStatus");
 
 //Append messages to chatbox
 function appendMessage(sender, text) {
