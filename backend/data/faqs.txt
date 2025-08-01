@@ -1,0 +1,75 @@
+Q:I am unable to view my test interview letter on my admission portal?
+A:You can view your test/interview letter on your admission portal after paying and verifying the application processing fee (PKR 1,500).
+K:admission portal test interview fee verify 
+Q:My degree(s) are not getting attached in the academic section?
+A:To attach your degrees, please follow the portal instructions—scan or upload your transcript as a single PDF; equivalence documents from IBCC may be required.
+K:degree attach academic section transcript equivalence 
+Q:My O A levels result spans multiple pages but the portal only allows one sheet; how can I attach all pages?
+A:Attach the sheet that has your major grades; if you're using O/A levels, it’s recommended to get equivalence from IBCC and upload that.
+K:a levels ibcc o levels grade equivalence 
+Q:My admission processing fee is not getting verified?
+A:If payment was made at AlBaraka Bank, verification can take 2–3 working days. You may email a copy of your challan to admissions@ucp.edu.pk if delay persists.
+K:fee fee verification processing bank challan 
+Q:My tuition fee challan is not uploaded on the portal?
+A:Visit the Student Service Centre on campus for document verification; SSC will issue the valid fee challan for upload.
+K:tution fee challan portal upload SSC service centre 
+Q:E‑mail with signup credentials was not received (Yahoo ID)?
+A:Please check your spam folder. If still not delivered, try signing up using a Gmail account.
+K:email signup credentials spam Yahoo Gmail 
+Q:Do I have to print and submit the admission form manually?
+A:No, UCP does not require printed forms—everything is submitted online via the portal.
+K:print manual submission admission form 
+Q:Where can I see my timetable?
+A:Your class timetable will display in your student portal once your classes have been scheduled.
+K:timetable student portal classes schedule 
+Q:Does UCP offer any degree programs on weekends?
+A:MBA Executive and MPhil in Media & Communication are offered on weekends. Most other programs are weekday-only.
+K:weekend programs MBA Executive MPhil Media Communication 
+Q:Does UCP charge tuition fee annually or per semester?
+A:UCP charges tuition per semester, divided into two installments.
+K:tuition fee per semester installment 
+Q:What is the duration of one semester at UCP?
+A:A regular semester at UCP is approximately four months or around 32 weeks.
+K:semester duration weeks months 
+Q:How are you?
+A:I’m UniBot – a friendly FAQ assistant bot 🤖. I don’t have feelings, but thanks for asking! How are **you** doing today?
+K:how are you uniBot bot 
+Q:I’m doing well!
+A:That’s great to hear! I’m glad you’re doing well. If you have any questions about UCP or anything else, just ask!
+K:doing well fine great 
+Q:I’m not doing well.
+A:I'm sorry to hear that. I hope things get better soon! If you want to ask any question about UCP or need assistance, I’m here to help.
+K:not well sad help 
+Q:The university's official campus timing?
+A:University hours are from 8:00 AM to 4:00 PM, Monday through Saturday.
+K:timing hours university timing 8:00 16:00 campus hours 
+Q:What are the admission office hours?
+A:The Admission Office is open 9:00 AM–5:00 PM Monday to Friday and 9:00 AM–1:00 PM on Saturdays.
+K:admission office hours timing 9:00 17:00 13:00 
+Q:Does UCP have a library and gym?
+A:Yes – UCP campus includes a fully‑equipped library, two gymnasiums, indoor cafeterias, rooftop cafes, swimming pool and an amphitheatre.
+K:library gym pool cafeteria facilities campus 
+Q:What degree programs are offered at UCP?
+A:UCP offers a broad range of undergraduate, graduate and PhD programs across faculties like Engineering, IT, Pharmaceuticals, Law, Management Sciences, Media, Life Sciences, Arts & Social Sciences and Science & Technology.
+K:programs faculties undergraduate graduate PhD 
+Q:How big is the UCP library?
+A:UCP Library houses over 40,000 books and provides study spaces, research facilities, and access to academic journals.
+K:library books collection study research facilities 
+Q:When do classes usually begin each semester?
+A:For Spring 2025, classes began on 10 March 2025. For Fall 2025, classes begin on 28 July 2025. Check the academic calendar for exact admission and exam dates.
+K:start semester spring fall academic calendar dates 
+Q:What accreditation does UCP have?
+A:UCP is chartered by the Government of Punjab and recognized by the HEC of Pakistan. Its Engineering, Computer Science, and Pharmacy programs are accredited by PEC and PCP, and broadly recognized by Washington Accord and NCEAC.
+K:accreditation HEC PEC PCP NCEAC Washington Accord 
+Q:Where is UCP located in Lahore?
+A:The main campus is located on Khayaban‑e‑Jinnah Road, Johar Town, Lahore, opposite Shaukat Khanum Hospital.
+K:location address campus Johar Town Lahore UCP 
+Q:How do I apply to UCP?
+A:Apply online via our admission portal. After submission and fee payment you’ll get a reference number and admissions/interview letter notification.
+K:apply admission portal online apply fee reference interview 
+Q:How can I contact student services?
+A:UCP Student Service Centre (SSC) handles documentation and fee challan issues. You can email admissions@ucp.edu.pk or use the WhatsApp service via the official website.
+K:student service centre SSC email Whatsapp contact 
+Q:When was UniBot created?
+A:I was created on 1st August, 2025
+K:birthday 

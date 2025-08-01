@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniBot - Admin Panel</title>
+  <style>
+    :root {
+      --bg-light: #f9f9f9;
+      --text-light: #222;
+      --user-msg-light: #d0f0fd;
+      --bot-msg-light: #e6e6e6;
+
+      --bg-dark: #1e1e1e;
+      --text-dark: #f1f1f1;
+      --user-msg-dark: #005f73;
+      --bot-msg-dark: #333;
+
+      --accent: #1ABC9C;
+      --radius: 12px;
+    }
+
+    body.light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+    body.dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    header {
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .header-actions button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: var(--radius);
+      background: white;
+      color: var(--accent);
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+    }
+
+    .header-actions button:hover {
+      background: #f0f0f0;
+      color: #148f77;
+      transform: translateY(-1px);
+    }
+
+    .login-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .login-form {
+      background: inherit;
+      padding: 2rem;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      border: 1px solid #ccc;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    body.dark .login-form {
+      border-color: #444;
+    }
+
+    .login-form h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      color: var(--accent);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: bold;
+    }
+
+    input[type="text"], input[type="password"], textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      transition: border-color 0.2s ease;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus, input[type="password"]:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.2);
+    }
+
+    body.dark input[type="text"], 
+    body.dark input[type="password"], 
+    body.dark textarea {
+      background: #333;
+      border-color: #555;
+      color: white;
+    }
+
+    button {
+      padding: 0.75rem 1rem;
+      border: none;
+      border-radius: var(--radius);
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      min-width: 80px;
+    }
+
+    button:hover {
+      background: #148f77;
+      transform: translateY(-1px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .admin-container {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .admin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .admin-header h2 {
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .faq-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .faq-item {
+      background: inherit;
+      border: 1px solid #ccc;
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: all 0.2s ease;
+    }
+
+    .faq-item:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    body.dark .faq-item {
+      border-color: #444;
+    }
+
+    .faq-question {
+      font-weight: bold;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+    }
+
+    .faq-answer {
+      margin-bottom: 1rem;
+      line-height: 1.4;
+    }
+
+    .faq-keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .keyword-tag {
+      background: var(--accent);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+    }
+
+    .faq-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+    }
+
+    .btn-secondary:hover {
+      background: #545b62;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background: var(--bg-light);
+      color: var(--text-light);
+      margin: 5% auto;
+      padding: 2rem;
+      border-radius: var(--radius);
+      width: 90%;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    body.dark .modal-content {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      border: none;
+      background: none;
+      padding: 0;
+      min-width: auto;
+    }
+
+    .close:hover {
+      color: #000;
+      transform: none;
+    }
+
+    body.dark .close:hover {
+      color: #fff;
+    }
+
+    .keywords-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .keyword-input-tag {
+      background: var(--user-msg-light);
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    body.dark .keyword-input-tag {
+      background: var(--user-msg-dark);
+      color: white;
+    }
+
+    .remove-keyword {
+      background: none;
+      border: none;
+      color: #dc3545;
+      cursor: pointer;
+      font-weight: bold;
+      padding: 0;
+      min-width: auto;
+    }
+
+    .remove-keyword:hover {
+      transform: none;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 0.75rem;
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      border: 1px solid #f5c6cb;
+    }
+
+    body.dark .error-message {
+      background: #2d1b1e;
+      color: #f8d7da;
+      border-color: #842029;
+    }
+
+    footer {
+      text-align: center;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      background: #eee;
+      color: #666;
+    }
+
+    body.dark footer {
+      background: #111;
+      color: #aaa;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      header {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      
+      .header-actions {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .admin-container {
+        padding: 1rem;
+      }
+      
+      .admin-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+      }
+      
+      .faq-actions {
+        flex-direction: column;
+      }
+      
+      .modal-content {
+        margin: 10% auto;
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body class="light">
+  
+  <header>
+    <h1>🔧 UniBot Admin</h1>
+    <div class="header-actions">
+      <button id="themeToggle">🌙</button>
+      <button id="backToChat" style="display: none;">Back to Chat</button>
+      <button id="logoutBtn" style="display: none;">Logout</button>
+    </div>
+  </header>
+
+  <!-- Login Form -->
+  <div class="login-container" id="loginContainer">
+    <div class="login-form">
+      <h2>Admin Login</h2>
+      <div id="loginError" class="error-message" style="display: none;"></div>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Password:</label>
+        <input type="password" id="password" required>
+      </div>
+      <button id="loginBtn" style="width: 100%;">Login</button>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div class="admin-container" id="adminContainer" style="display: none;">
+    <div class="admin-header">
+      <h2>FAQ Management</h2>
+      <button id="addFaqBtn">Add New FAQ</button>
+    </div>
+    
+    <div id="faqList" class="faq-grid">
+      <!-- FAQs will be loaded here -->
+    </div>
+  </div>
+
+  <!-- FAQ Modal -->
+  <div id="faqModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Add FAQ</h3>
+        <span class="close" id="closeModal">&times;</span>
+      </div>
+      
+      <div id="modalError" class="error-message" style="display: none;"></div>
+      
+      <div class="form-group">
+        <label for="faqQuestion">Question:</label>
+        <input type="text" id="faqQuestion" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="faqAnswer">Answer:</label>
+        <textarea id="faqAnswer" rows="4" required></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="keywordInput">Keywords:</label>
+        <input type="text" id="keywordInput" placeholder="Type keyword and press Enter">
+        <div id="keywordsList" class="keywords-input"></div>
+      </div>
+      
+      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+        <button id="cancelBtn" class="btn-secondary">Cancel</button>
+        <button id="saveFaqBtn">Save FAQ</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>&copy; 2025 UniBot Admin | Developed by bugblazer</p>
+  </footer>
+
+  <script>
+    // Configuration
+    const API_BASE = 'http://localhost:18080';
+    
+    // State
+    let currentEditIndex = -1;
+    let keywords = [];
+    let faqs = [];
+
+    // DOM Elements
+    const loginContainer = document.getElementById('loginContainer');
+    const adminContainer = document.getElementById('adminContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const backToChat = document.getElementById('backToChat');
+    const themeToggle = document.getElementById('themeToggle');
+    const faqModal = document.getElementById('faqModal');
+    const addFaqBtn = document.getElementById('addFaqBtn');
+    const closeModal = document.getElementById('closeModal');
+    const saveFaqBtn = document.getElementById('saveFaqBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const faqList = document.getElementById('faqList');
+
+    // Login functionality
+    async function login() {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const loginError = document.getElementById('loginError');
+
+      if (!username || !password) {
+        showError(loginError, 'Please enter both username and password');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/admin/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          loginContainer.style.display = 'none';
+          adminContainer.style.display = 'block';
+          logoutBtn.style.display = 'block';
+          backToChat.style.display = 'block';
+          hideError(loginError);
+          await loadFAQs();
+        } else {
+          showError(loginError, 'Invalid username or password');
+        }
+      } catch (error) {
+        showError(loginError, 'Failed to connect to server');
+        console.error('Login error:', error);
+      }
+    }
+
+    // Load FAQs from server
+    async function loadFAQs() {
+      try {
+        const response = await fetch(`${API_BASE}/admin/faqs`);
+        if (response.ok) {
+          const data = await response.json();
+          faqs = Object.values(data);
+          renderFAQs();
+        } else {
+          console.error('Failed to load FAQs');
+        }
+      } catch (error) {
+        console.error('Error loading FAQs:', error);
+      }
+    }
+
+    // Render FAQs in the dashboard
+    function renderFAQs() {
+      faqList.innerHTML = '';
+      
+      if (faqs.length === 0) {
+        faqList.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">No FAQs found. Click "Add New FAQ" to get started.</p>';
+        return;
+      }
+
+      faqs.forEach((faq, index) => {
+        const faqDiv = document.createElement('div');
+        faqDiv.className = 'faq-item';
+        faqDiv.innerHTML = `
+          <div class="faq-question">${escapeHtml(faq.question)}</div>
+          <div class="faq-answer">${escapeHtml(faq.answer)}</div>
+          <div class="faq-keywords">
+            ${faq.keywords.map(keyword => `<span class="keyword-tag">${escapeHtml(keyword)}</span>`).join('')}
+          </div>
+          <div class="faq-actions">
+            <button onclick="editFAQ(${index})" class="btn-secondary">Edit</button>
+            <button onclick="deleteFAQ(${index})" class="btn-danger">Delete</button>
+          </div>
+        `;
+        faqList.appendChild(faqDiv);
+      });
+    }
+
+    // Show modal for adding/editing FAQ
+    function showFAQModal(isEdit = false, index = -1) {
+      currentEditIndex = index;
+      const modalTitle = document.getElementById('modalTitle');
+      const faqQuestion = document.getElementById('faqQuestion');
+      const faqAnswer = document.getElementById('faqAnswer');
+      const modalError = document.getElementById('modalError');
+
+      modalTitle.textContent = isEdit ? 'Edit FAQ' : 'Add FAQ';
+      hideError(modalError);
+
+      if (isEdit && index >= 0) {
+        const faq = faqs[index];
+        faqQuestion.value = faq.question;
+        faqAnswer.value = faq.answer;
+        keywords = [...faq.keywords];
+      } else {
+        faqQuestion.value = '';
+        faqAnswer.value = '';
+        keywords = [];
+      }
+
+      renderKeywords();
+      faqModal.style.display = 'block';
+    }
+
+    // Add new FAQ
+    function addFAQ() {
+      showFAQModal(false);
+    }
+
+    // Edit existing FAQ
+    function editFAQ(index) {
+      showFAQModal(true, index);
+    }
+
+    // Delete FAQ
+    async function deleteFAQ(index) {
+      if (!confirm('Are you sure you want to delete this FAQ?')) return;
+
+      try {
+        const response = await fetch(`${API_BASE}/admin/faqs/${index}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          await loadFAQs();
+        } else {
+          alert('Failed to delete FAQ');
+        }
+      } catch (error) {
+        alert('Error deleting FAQ');
+        console.error('Delete error:', error);
+      }
+    }
+
+    // Save FAQ (add or edit)
+    async function saveFAQ() {
+      const question = document.getElementById('faqQuestion').value.trim();
+      const answer = document.getElementById('faqAnswer').value.trim();
+      const modalError = document.getElementById('modalError');
+
+      if (!question || !answer || keywords.length === 0) {
+        showError(modalError, 'Please fill in all fields and add at least one keyword');
+        return;
+      }
+
+      const faqData = { question, answer, keywords };
+
+      try {
+        let response;
+        if (currentEditIndex >= 0) {
+          // Edit existing FAQ
+          response = await fetch(`${API_BASE}/admin/faqs/${currentEditIndex}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(faqData)
+          });
+        } else {
+          // Add new FAQ
+          response = await fetch(`${API_BASE}/admin/faqs`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(faqData)
+          });
+        }
+
+        if (response.ok) {
+          faqModal.style.display = 'none';
+          await loadFAQs();
+        } else {
+          showError(modalError, 'Failed to save FAQ');
+        }
+      } catch (error) {
+        showError(modalError, 'Error saving FAQ');
+        console.error('Save error:', error);
+      }
+    }
+
+    // Keyword management
+    function addKeyword() {
+      const keywordInput = document.getElementById('keywordInput');
+      const keyword = keywordInput.value.trim().toLowerCase();
+
+      if (keyword && !keywords.includes(keyword)) {
+        keywords.push(keyword);
+        keywordInput.value = '';
+        renderKeywords();
+      }
+    }
+
+    function removeKeyword(index) {
+      keywords.splice(index, 1);
+      renderKeywords();
+    }
+
+    function renderKeywords() {
+      const keywordsList = document.getElementById('keywordsList');
+      keywordsList.innerHTML = keywords.map((keyword, index) => `
+        <div class="keyword-input-tag">
+          ${escapeHtml(keyword)}
+          <button class="remove-keyword" onclick="removeKeyword(${index})">×</button>
+        </div>
+      `).join('');
+    }
+
+    // Utility functions
+    function showError(element, message) {
+      element.textContent = message;
+      element.style.display = 'block';
+    }
+
+    function hideError(element) {
+      element.style.display = 'none';
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Logout
+    function logout() {
+      loginContainer.style.display = 'flex';
+      adminContainer.style.display = 'none';
+      logoutBtn.style.display = 'none';
+      backToChat.style.display = 'none';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+    }
+
+    // Theme toggle
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      document.body.classList.toggle('light');
+
+      const isDark = document.body.classList.contains('dark');
+      themeToggle.textContent = isDark ? '☀️' : '🌙';
+    }
+
+    // Event listeners
+    loginBtn.addEventListener('click', login);
+    logoutBtn.addEventListener('click', logout);
+    themeToggle.addEventListener('click', toggleTheme);
+    addFaqBtn.addEventListener('click', addFAQ);
+    closeModal.addEventListener('click', () => faqModal.style.display = 'none');
+    cancelBtn.addEventListener('click', () => faqModal.style.display = 'none');
+    saveFaqBtn.addEventListener('click', saveFAQ);
+
+    // Back to chat button
+    backToChat.addEventListener('click', () => {
+      window.location.href = 'index.html'; // Adjust path as needed
+    });
+
+    // Handle Enter key for login
+    document.getElementById('password').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') login();
+    });
+
+    // Handle Enter key for keyword input
+    document.getElementById('keywordInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addKeyword();
+      }
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+      if (e.target === faqModal) {
+        faqModal.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
