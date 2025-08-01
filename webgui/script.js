@@ -1,8 +1,8 @@
-// Configuration
+//Configuration
 const API_BASE = 'http://localhost:18080';
 const API_ENDPOINT = '/ask';
 
-// DOM Elements
+//DOM Elements
 const userInput = document.getElementById("userInput");
 const sendBtn = document.getElementById("sendBtn");
 const chatbox = document.getElementById("chatbox");
@@ -11,7 +11,7 @@ const adminLoginBtn = document.getElementById("adminLogin");
 const statusIndicator = document.getElementById("statusIndicator");
 const connectionStatus = document.getElementById("connectionStatus");
 
-// Append messages to chatbox
+//Append messages to chatbox
 function appendMessage(sender, text) {
   const msgDiv = document.createElement("div");
   msgDiv.className = `message ${sender}`;
@@ -20,7 +20,7 @@ function appendMessage(sender, text) {
   chatbox.scrollTop = chatbox.scrollHeight;
 }
 
-// Send user message to backend
+//Send user message to backend
 async function sendMessage() {
   const question = userInput.value.trim();
   if (!question) return;
@@ -47,13 +47,13 @@ async function sendMessage() {
   }
 }
 
-// Event listeners
+//Event listeners
 sendBtn.onclick = sendMessage;
 userInput.addEventListener("keypress", function (e) {
   if (e.key === "Enter") sendMessage();
 });
 
-// Theme toggle
+//Theme toggle
 themeToggle.onclick = () => {
   document.body.classList.toggle("dark");
   document.body.classList.toggle("light");
@@ -62,12 +62,12 @@ themeToggle.onclick = () => {
   themeToggle.innerText = isDark ? "☀️" : "🌙";
 };
 
-// Admin panel navigation
+//Admin panel navigation
 adminLoginBtn.onclick = () => {
   window.location.href = 'admin.html';
 };
 
-// Connectivity indicator
+//Connectivity indicator
 async function checkConnection() {
   try {
     const res = await fetch(`${API_BASE}${API_ENDPOINT}`, {
@@ -78,5 +78,5 @@ async function checkConnection() {
   }
 }
 
-// Check connection on load
+//Check connection on load
 checkConnection();
