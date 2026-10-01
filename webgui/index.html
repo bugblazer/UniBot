@@ -3,31 +3,82 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>UniBot - FAQ Assistant</title>
+  <title>UniBot · University FAQ assistant</title>
+  <meta name="description" content="Ask UniBot about admissions, fees, the student portal and important dates." />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="shared.css" />
   <link rel="stylesheet" href="style.css" />
+  <script src="theme.js"></script>
 </head>
-<body class="light">
-  
-  <header>
-    <h1>🎓 UniBot</h1>
-    <div class="header-actions">
-      <button id="themeToggle">🌙</button>
-      <button id="adminLogin">Admin Panel</button>
+<body>
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4"/><circle cx="12" cy="3.5" r="0.8"/><path d="M9 13h.01M15 13h.01"/><path d="M2 13v2M22 13v2"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5c0 4.5 3 8.3 7 10 4-1.7 7-5.5 7-10V6l-7-3Z"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/></symbol>
+  </svg>
+
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <span class="avatar"><svg class="icon"><use href="#i-bot" /></svg></span>
+        <div>
+          <h1>UniBot</h1>
+          <p>
+            <span class="status" id="status" data-state="checking"><span class="dot" aria-hidden="true"></span><span id="statusText">Connecting…</span></span>
+            · Admissions and student FAQs
+          </p>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
+          <svg class="icon moon"><use href="#i-moon" /></svg>
+          <svg class="icon sun"><use href="#i-sun" /></svg>
+        </button>
+        <a class="btn ghost" href="admin.html">
+          <svg class="icon"><use href="#i-shield" /></svg>
+          <span class="hide-sm">Admin</span>
+        </a>
+      </div>
+    </header>
+
+    <main class="chat" id="chat">
+      <div class="chat-inner">
+        <section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+          <span class="avatar lg"><svg class="icon"><use href="#i-bot" /></svg></span>
+          <h2 id="welcomeTitle">Hi, I'm UniBot</h2>
+          <p>Ask me about admissions, fees, the student portal or documents. I answer from the university's own FAQ list, so you get the official answer.</p>
+
+          <div class="suggestions" id="suggestionsWrap" hidden>
+            <h3>Popular questions</h3>
+            <div class="chip-row" id="suggestions"></div>
+          </div>
+
+          <div class="upcoming" id="upcomingWrap" hidden>
+            <h3>Upcoming dates</h3>
+            <ul id="upcoming"></ul>
+          </div>
+        </section>
+
+        <div class="messages" id="messages" role="log" aria-live="polite" aria-label="Conversation"></div>
+      </div>
+    </main>
+
+    <div class="composer-wrap">
+      <form class="composer" id="composer">
+        <label class="sr-only" for="userInput">Your question</label>
+        <textarea id="userInput" rows="1" maxlength="500" placeholder="Ask a question, e.g. my fee isn't verified" autocomplete="off"></textarea>
+        <button class="send" id="sendBtn" type="submit" aria-label="Send question" disabled>
+          <svg class="icon"><use href="#i-send" /></svg>
+        </button>
+      </form>
+      <p class="hint">UniBot matches keywords, so short, specific questions work best. Press Enter to send, Shift + Enter for a new line.</p>
     </div>
-  </header>
-
-  <main>
-    <div class="chatbox" id="chatbox"></div>
-
-    <div class="input-area">
-      <input type="text" id="userInput" placeholder="How can I help you today?" />
-      <button id="sendBtn">Send</button>
-    </div>
-  </main>
-
-  <footer>
-    <p>&copy; 2025 UniBot | Developed by bugblazer</span></p>
-  </footer>
+  </div>
 
   <script src="script.js"></script>
 </body>

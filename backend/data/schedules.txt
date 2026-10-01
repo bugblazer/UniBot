@@ -1,0 +1,20 @@
+T:Fee submission deadline
+D:2026-10-15
+W:5:00 PM
+I:Submit your tuition fee challan at a partner bank branch, then upload the paid copy on the portal.
+K:fee deadline challan submission last date 
+T:Entry test
+D:2026-10-22
+W:9:00 AM
+I:Bring your test letter and original CNIC or B-form. Reporting starts 30 minutes early.
+K:entry test exam 
+T:Admission interviews
+D:2026-10-29
+W:10:00 AM
+I:Interview slots are listed on your admission portal after the entry test result.
+K:interview interviews 
+T:Orientation for new students
+D:2026-11-09
+W:11:00 AM
+I:Held in the main auditorium. Bring your student ID card.
+K:orientation welcome new semester start classes 

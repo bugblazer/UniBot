@@ -1,293 +1,517 @@
-    //Configuration
-    const API_BASE = 'http://localhost:18080';
-    
-    //State
-    let currentEditIndex = -1;
-    let keywords = [];
-    let faqs = [];
+// Admin page: sign in, then manage FAQs and schedules. Served from the same origin as the API.
+const API_BASE = '';
+const TOKEN_KEY = 'unibot-admin-token';
 
-    //DOM Elements
-    const loginContainer = document.getElementById('loginContainer');
-    const adminContainer = document.getElementById('adminContainer');
-    const loginBtn = document.getElementById('loginBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const backToChat = document.getElementById('backToChat');
-    const themeToggle = document.getElementById('themeToggle');
-    const faqModal = document.getElementById('faqModal');
-    const addFaqBtn = document.getElementById('addFaqBtn');
-    const closeModal = document.getElementById('closeModal');
-    const saveFaqBtn = document.getElementById('saveFaqBtn');
-    const cancelBtn = document.getElementById('cancelBtn');
-    const faqList = document.getElementById('faqList');
+const loginView = document.getElementById('loginView');
+const dashboard = document.getElementById('dashboard');
+const loginForm = document.getElementById('loginForm');
+const loginError = document.getElementById('loginError');
+const logoutBtn = document.getElementById('logoutBtn');
+const toast = document.getElementById('toast');
 
-    //Login functionality
-    async function login() {
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value.trim();
-      const loginError = document.getElementById('loginError');
+let faqs = [];
+let schedules = [];
 
-      if (!username || !password) {
-        showError(loginError, 'Please enter both username and password');
-        return;
-      }
+// ---------- session ----------
 
-      try {
-        const response = await fetch(`${API_BASE}/admin/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+let memoryToken = null;
+
+function getToken() {
+  try {
+    return sessionStorage.getItem(TOKEN_KEY);
+  } catch {
+    return memoryToken;
+  }
+}
+
+function setToken(token) {
+  memoryToken = token;
+  try {
+    if (token) sessionStorage.setItem(TOKEN_KEY, token);
+    else sessionStorage.removeItem(TOKEN_KEY);
+  } catch {
+    // Session storage unavailable; the in-memory token lasts until the page closes.
+  }
+}
+
+class AuthError extends Error {}
+
+async function api(path, options = {}) {
+  const response = await fetch(`${API_BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${getToken() ?? ''}`,
+      ...options.headers,
+    },
+  });
+  if (response.status === 401) throw new AuthError('Your session expired. Sign in again.');
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(body.error || `Request failed (${response.status})`);
+  }
+  return response.status === 204 ? null : response.json();
+}
+
+function handleError(err, showIn) {
+  if (err instanceof AuthError) {
+    signOut(err.message);
+    return;
+  }
+  console.error(err);
+  if (showIn) showFormError(showIn, err.message);
+  else showToast(err.message);
+}
+
+// ---------- helpers ----------
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function icon(name) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'icon');
+  svg.setAttribute('aria-hidden', 'true');
+  const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+  use.setAttribute('href', `#i-${name}`);
+  svg.appendChild(use);
+  return svg;
+}
+
+function iconButton(name, label, className = '') {
+  const button = el('button', `icon-btn ${className}`.trim());
+  button.type = 'button';
+  button.setAttribute('aria-label', label);
+  button.appendChild(icon(name));
+  return button;
+}
+
+function showFormError(node, message) {
+  node.textContent = message;
+  node.hidden = false;
+}
+
+function clearFormError(node) {
+  node.hidden = true;
+  node.textContent = '';
+}
+
+let toastTimer;
+function showToast(message) {
+  toast.textContent = message;
+  toast.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => (toast.hidden = true), 2600);
+}
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function parseDate(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
+
+const longDate = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+// ---------- keyword chip input ----------
+
+function chipInput(container) {
+  const list = container.querySelector('.chip-list');
+  const input = container.querySelector('input');
+  let values = [];
+
+  function render() {
+    list.replaceChildren(
+      ...values.map((value, index) => {
+        const chip = el('li', 'chip removable', value);
+        const remove = el('button');
+        remove.type = 'button';
+        remove.setAttribute('aria-label', `Remove keyword ${value}`);
+        remove.appendChild(icon('x'));
+        remove.addEventListener('click', () => {
+          values.splice(index, 1);
+          render();
+          input.focus();
         });
+        chip.appendChild(remove);
+        return chip;
+      }),
+    );
+  }
 
-        if (response.ok) {
-          loginContainer.style.display = 'none';
-          adminContainer.style.display = 'block';
-          logoutBtn.style.display = 'block';
-          backToChat.style.display = 'block';
-          hideError(loginError);
-          await loadFAQs();
-        } else {
-          showError(loginError, 'Invalid username or password');
-        }
-      } catch (error) {
-        showError(loginError, 'Failed to connect to server');
-        console.error('Login error:', error);
-      }
-    }
-
-    //Load FAQs from server
-    async function loadFAQs() {
-      try {
-        const response = await fetch(`${API_BASE}/admin/faqs`);
-        if (response.ok) {
-          const data = await response.json();
-          faqs = Object.values(data);
-          renderFAQs();
-        } else {
-          console.error('Failed to load FAQs');
-        }
-      } catch (error) {
-        console.error('Error loading FAQs:', error);
-      }
-    }
-
-    //Render FAQs in the dashboard
-    function renderFAQs() {
-      faqList.innerHTML = '';
-      
-      if (faqs.length === 0) {
-        faqList.innerHTML = '<p style="text-align: center; color: #666; grid-column: 1/-1;">No FAQs found. Click "Add New FAQ" to get started.</p>';
-        return;
-      }
-
-      faqs.forEach((faq, index) => {
-        const faqDiv = document.createElement('div');
-        faqDiv.className = 'faq-item';
-        faqDiv.innerHTML = `
-          <div class="faq-question">${escapeHtml(faq.question)}</div>
-          <div class="faq-answer">${escapeHtml(faq.answer)}</div>
-          <div class="faq-keywords">
-            ${faq.keywords.map(keyword => `<span class="keyword-tag">${escapeHtml(keyword)}</span>`).join('')}
-          </div>
-          <div class="faq-actions">
-            <button onclick="editFAQ(${index})" class="btn-secondary">Edit</button>
-            <button onclick="deleteFAQ(${index})" class="btn-danger">Delete</button>
-          </div>
-        `;
-        faqList.appendChild(faqDiv);
+  function commit() {
+    input.value
+      .toLowerCase()
+      .split(/[\s,]+/)
+      .filter(Boolean)
+      .forEach((word) => {
+        if (!values.includes(word)) values.push(word);
       });
+    input.value = '';
+    render();
+  }
+
+  input.addEventListener('keydown', (event) => {
+    if (event.key === 'Enter' || event.key === ',') {
+      event.preventDefault();
+      commit();
+    } else if (event.key === 'Backspace' && !input.value && values.length) {
+      values.pop();
+      render();
     }
+  });
+  input.addEventListener('blur', commit);
+  container.addEventListener('click', (event) => {
+    if (event.target === container) input.focus();
+  });
 
-    //Show modal for adding/editing FAQ
-    function showFAQModal(isEdit = false, index = -1) {
-      currentEditIndex = index;
-      const modalTitle = document.getElementById('modalTitle');
-      const faqQuestion = document.getElementById('faqQuestion');
-      const faqAnswer = document.getElementById('faqAnswer');
-      const modalError = document.getElementById('modalError');
+  return {
+    get: () => {
+      commit();
+      return [...values];
+    },
+    set: (next) => {
+      values = [...next];
+      input.value = '';
+      render();
+    },
+  };
+}
 
-      modalTitle.textContent = isEdit ? 'Edit FAQ' : 'Add FAQ';
-      hideError(modalError);
+const faqKeywords = chipInput(document.getElementById('faqKeywords'));
+const scheduleKeywords = chipInput(document.getElementById('scheduleKeywords'));
 
-      if (isEdit && index >= 0) {
-        const faq = faqs[index];
-        faqQuestion.value = faq.question;
-        faqAnswer.value = faq.answer;
-        keywords = [...faq.keywords];
-      } else {
-        faqQuestion.value = '';
-        faqAnswer.value = '';
-        keywords = [];
-      }
+// ---------- dialogs ----------
 
-      renderKeywords();
-      faqModal.style.display = 'block';
-    }
+document.querySelectorAll('dialog').forEach((dialog) => {
+  dialog.querySelectorAll('[data-close]').forEach((button) => button.addEventListener('click', () => dialog.close()));
+  // Click on the backdrop closes the dialog.
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+});
 
-    //Add new FAQ
-    function addFAQ() {
-      showFAQModal(false);
-    }
+const confirmDialog = document.getElementById('confirmDialog');
+let pendingDelete = null;
 
-    //Edit existing FAQ
-    function editFAQ(index) {
-      showFAQModal(true, index);
-    }
+function confirmDelete(title, text, action) {
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').textContent = text;
+  pendingDelete = action;
+  confirmDialog.showModal();
+}
 
-    //Delete FAQ
-    async function deleteFAQ(index) {
-      if (!confirm('Are you sure you want to delete this FAQ?')) return;
+document.getElementById('confirmDelete').addEventListener('click', async () => {
+  const action = pendingDelete;
+  confirmDialog.close();
+  if (action) await action();
+});
 
-      try {
-        const response = await fetch(`${API_BASE}/admin/faqs/${index}`, {
-          method: 'DELETE'
-        });
+// ---------- tabs ----------
 
-        if (response.ok) {
-          await loadFAQs();
-        } else {
-          alert('Failed to delete FAQ');
-        }
-      } catch (error) {
-        alert('Error deleting FAQ');
-        console.error('Delete error:', error);
-      }
-    }
+const tabs = [document.getElementById('tabFaqs'), document.getElementById('tabSchedules')];
 
-    //Save FAQ (add or edit)
-    async function saveFAQ() {
-      const question = document.getElementById('faqQuestion').value.trim();
-      const answer = document.getElementById('faqAnswer').value.trim();
-      const modalError = document.getElementById('modalError');
+function selectTab(tab) {
+  tabs.forEach((t) => {
+    const selected = t === tab;
+    t.setAttribute('aria-selected', String(selected));
+    t.tabIndex = selected ? 0 : -1;
+    document.getElementById(t.getAttribute('aria-controls')).hidden = !selected;
+  });
+}
 
-      if (!question || !answer || keywords.length === 0) {
-        showError(modalError, 'Please fill in all fields and add at least one keyword');
-        return;
-      }
+tabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectTab(tab));
+  tab.addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft') return;
+    const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    selectTab(next);
+    next.focus();
+  });
+});
 
-      const faqData = { question, answer, keywords };
+// ---------- FAQs ----------
 
-      try {
-        let response;
-        if (currentEditIndex >= 0) {
-          //Edit existing FAQ
-          response = await fetch(`${API_BASE}/admin/faqs/${currentEditIndex}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(faqData)
-          });
-        } else {
-          //Add new FAQ
-          response = await fetch(`${API_BASE}/admin/faqs`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(faqData)
-          });
-        }
+const faqList = document.getElementById('faqList');
+const faqSearch = document.getElementById('faqSearch');
+const faqCount = document.getElementById('faqCount');
+const faqDialog = document.getElementById('faqDialog');
+const faqForm = document.getElementById('faqForm');
+const faqError = document.getElementById('faqError');
+let editingFaq = -1;
 
-        if (response.ok) {
-          faqModal.style.display = 'none';
-          await loadFAQs();
-        } else {
-          showError(modalError, 'Failed to save FAQ');
-        }
-      } catch (error) {
-        showError(modalError, 'Error saving FAQ');
-        console.error('Save error:', error);
-      }
-    }
+function renderFAQs() {
+  const query = faqSearch.value.trim().toLowerCase();
+  const visible = faqs.filter(
+    (faq) =>
+      !query ||
+      faq.question.toLowerCase().includes(query) ||
+      faq.answer.toLowerCase().includes(query) ||
+      faq.keywords.some((k) => k.includes(query)),
+  );
 
-    //Keyword management
-    function addKeyword() {
-      const keywordInput = document.getElementById('keywordInput');
-      const keyword = keywordInput.value.trim().toLowerCase();
+  faqCount.textContent = query ? `${visible.length} of ${faqs.length} FAQs` : `${faqs.length} FAQs`;
 
-      if (keyword && !keywords.includes(keyword)) {
-        keywords.push(keyword);
-        keywordInput.value = '';
-        renderKeywords();
-      }
-    }
+  if (!visible.length) {
+    const empty = el('li', 'empty', query ? 'No FAQs match your search.' : 'No FAQs yet. Add the first one with New FAQ.');
+    faqList.replaceChildren(empty);
+    return;
+  }
 
-    function removeKeyword(index) {
-      keywords.splice(index, 1);
-      renderKeywords();
-    }
+  faqList.replaceChildren(
+    ...visible.map((faq) => {
+      const item = el('li', 'item');
+      const body = el('div', 'item-body');
+      body.append(el('p', 'item-title', faq.question), el('p', 'item-text', faq.answer));
+      const meta = el('div', 'item-meta');
+      faq.keywords.forEach((k) => meta.appendChild(el('span', 'chip', k)));
+      body.appendChild(meta);
 
-    function renderKeywords() {
-      const keywordsList = document.getElementById('keywordsList');
-      keywordsList.innerHTML = keywords.map((keyword, index) => `
-        <div class="keyword-input-tag">
-          ${escapeHtml(keyword)}
-          <button class="remove-keyword" onclick="removeKeyword(${index})">×</button>
-        </div>
-      `).join('');
-    }
+      const actions = el('div', 'item-actions');
+      const edit = iconButton('edit', `Edit FAQ: ${faq.question}`);
+      edit.addEventListener('click', () => openFaq(faq));
+      const del = iconButton('trash', `Delete FAQ: ${faq.question}`, 'delete');
+      del.addEventListener('click', () =>
+        confirmDelete('Delete this FAQ?', `"${faq.question}" will no longer be answered. This can't be undone.`, () => deleteFaq(faq.id)),
+      );
+      actions.append(edit, del);
 
-    //Utility functions
-    function showError(element, message) {
-      element.textContent = message;
-      element.style.display = 'block';
-    }
+      item.append(body, actions);
+      return item;
+    }),
+  );
+}
 
-    function hideError(element) {
-      element.style.display = 'none';
-    }
+function openFaq(faq) {
+  editingFaq = faq ? faq.id : -1;
+  document.getElementById('faqDialogTitle').textContent = faq ? 'Edit FAQ' : 'New FAQ';
+  document.getElementById('faqQuestion').value = faq?.question ?? '';
+  document.getElementById('faqAnswer').value = faq?.answer ?? '';
+  faqKeywords.set(faq?.keywords ?? []);
+  clearFormError(faqError);
+  faqDialog.showModal();
+  document.getElementById('faqQuestion').focus();
+}
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+faqForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = {
+    question: document.getElementById('faqQuestion').value.trim(),
+    answer: document.getElementById('faqAnswer').value.trim(),
+    keywords: faqKeywords.get(),
+  };
+  if (!payload.question || !payload.answer) return showFormError(faqError, 'Add a question and an answer.');
+  if (!payload.keywords.length) return showFormError(faqError, 'Add at least one keyword so students can find this answer.');
 
-    //Logout
-    function logout() {
-      loginContainer.style.display = 'flex';
-      adminContainer.style.display = 'none';
-      logoutBtn.style.display = 'none';
-      backToChat.style.display = 'none';
-      document.getElementById('username').value = '';
-      document.getElementById('password').value = '';
-    }
+  try {
+    const isEdit = editingFaq >= 0;
+    await api(isEdit ? `/admin/faqs/${editingFaq}` : '/admin/faqs', { method: isEdit ? 'PUT' : 'POST', body: JSON.stringify(payload) });
+    faqDialog.close();
+    showToast(isEdit ? 'FAQ updated' : 'FAQ added');
+    await loadAll();
+  } catch (err) {
+    handleError(err, faqError);
+  }
+});
 
-    //Theme toggle
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
-      document.body.classList.toggle('light');
+async function deleteFaq(id) {
+  try {
+    await api(`/admin/faqs/${id}`, { method: 'DELETE' });
+    showToast('FAQ deleted');
+    await loadAll();
+  } catch (err) {
+    handleError(err);
+  }
+}
 
-      const isDark = document.body.classList.contains('dark');
-      themeToggle.textContent = isDark ? '☀️' : '🌙';
-    }
+faqSearch.addEventListener('input', renderFAQs);
+document.getElementById('addFaqBtn').addEventListener('click', () => openFaq(null));
 
-    //Event listeners
-    loginBtn.addEventListener('click', login);
-    logoutBtn.addEventListener('click', logout);
-    themeToggle.addEventListener('click', toggleTheme);
-    addFaqBtn.addEventListener('click', addFAQ);
-    closeModal.addEventListener('click', () => faqModal.style.display = 'none');
-    cancelBtn.addEventListener('click', () => faqModal.style.display = 'none');
-    saveFaqBtn.addEventListener('click', saveFAQ);
+// ---------- schedules ----------
 
-    //Back to chat button
-    backToChat.addEventListener('click', () => {
-      window.location.href = 'index.html';
+const scheduleList = document.getElementById('scheduleList');
+const scheduleDialog = document.getElementById('scheduleDialog');
+const scheduleForm = document.getElementById('scheduleForm');
+const scheduleError = document.getElementById('scheduleError');
+let editingSchedule = -1;
+
+function renderSchedules() {
+  const today = todayISO();
+  const sorted = [...schedules].sort((a, b) => a.date.localeCompare(b.date));
+
+  if (!sorted.length) {
+    scheduleList.replaceChildren(el('li', 'empty', 'No dates yet. Add deadlines, tests or events with New date.'));
+    return;
+  }
+
+  scheduleList.replaceChildren(
+    ...sorted.map((s) => {
+      const past = s.date < today;
+      const date = parseDate(s.date);
+      const item = el('li', `item${past ? ' past' : ''}`);
+
+      const badge = el('div', 'date-badge');
+      badge.setAttribute('aria-hidden', 'true');
+      badge.append(el('span', 'month', date.toLocaleString(undefined, { month: 'short' })), el('span', 'day', String(date.getDate())));
+
+      const body = el('div', 'item-body');
+      body.appendChild(el('p', 'item-title', s.title));
+      const when = el('p', 'when');
+      when.append(icon('clock'), longDate.format(date) + (s.time ? ` · ${s.time}` : ''));
+      body.appendChild(when);
+      if (s.details) body.appendChild(el('p', 'item-text', s.details));
+      const meta = el('div', 'item-meta');
+      if (past) meta.appendChild(el('span', 'chip past', 'Past'));
+      s.keywords.forEach((k) => meta.appendChild(el('span', 'chip', k)));
+      body.appendChild(meta);
+
+      const actions = el('div', 'item-actions');
+      const edit = iconButton('edit', `Edit date: ${s.title}`);
+      edit.addEventListener('click', () => openSchedule(s));
+      const del = iconButton('trash', `Delete date: ${s.title}`, 'delete');
+      del.addEventListener('click', () =>
+        confirmDelete('Delete this date?', `"${s.title}" will be removed from UniBot. This can't be undone.`, () => deleteSchedule(s.id)),
+      );
+      actions.append(edit, del);
+
+      item.append(badge, body, actions);
+      return item;
+    }),
+  );
+}
+
+function openSchedule(s) {
+  editingSchedule = s ? s.id : -1;
+  document.getElementById('scheduleDialogTitle').textContent = s ? 'Edit date' : 'New date';
+  document.getElementById('scheduleTitle').value = s?.title ?? '';
+  document.getElementById('scheduleDate').value = s?.date ?? '';
+  document.getElementById('scheduleTime').value = s?.time ?? '';
+  document.getElementById('scheduleDetails').value = s?.details ?? '';
+  scheduleKeywords.set(s?.keywords ?? []);
+  clearFormError(scheduleError);
+  scheduleDialog.showModal();
+  document.getElementById('scheduleTitle').focus();
+}
+
+scheduleForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const payload = {
+    title: document.getElementById('scheduleTitle').value.trim(),
+    date: document.getElementById('scheduleDate').value,
+    time: document.getElementById('scheduleTime').value.trim(),
+    details: document.getElementById('scheduleDetails').value.trim(),
+    keywords: scheduleKeywords.get(),
+  };
+  if (!payload.title || !payload.date) return showFormError(scheduleError, 'Add a title and a date.');
+  if (!payload.keywords.length) return showFormError(scheduleError, 'Add at least one keyword so students can find this date.');
+
+  try {
+    const isEdit = editingSchedule >= 0;
+    await api(isEdit ? `/admin/schedules/${editingSchedule}` : '/admin/schedules', {
+      method: isEdit ? 'PUT' : 'POST',
+      body: JSON.stringify(payload),
     });
+    scheduleDialog.close();
+    showToast(isEdit ? 'Date updated' : 'Date added');
+    await loadAll();
+  } catch (err) {
+    handleError(err, scheduleError);
+  }
+});
 
-    //Handle enter key for login
-    document.getElementById('password').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') login();
-    });
+async function deleteSchedule(id) {
+  try {
+    await api(`/admin/schedules/${id}`, { method: 'DELETE' });
+    showToast('Date deleted');
+    await loadAll();
+  } catch (err) {
+    handleError(err);
+  }
+}
 
-    //Handle enter key for keyword input
-    document.getElementById('keywordInput').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        addKeyword();
-      }
-    });
+document.getElementById('addScheduleBtn').addEventListener('click', () => openSchedule(null));
 
-    //Closing modal while clicking out
-    window.addEventListener('click', (e) => {
-      if (e.target === faqModal) {
-        faqModal.style.display = 'none';
-      }
+// ---------- data ----------
+
+function renderStats() {
+  const keywords = new Set(faqs.flatMap((f) => f.keywords));
+  const today = todayISO();
+  document.getElementById('statFaqs').textContent = faqs.length;
+  document.getElementById('statKeywords').textContent = keywords.size;
+  document.getElementById('statUpcoming').textContent = schedules.filter((s) => s.date >= today).length;
+}
+
+async function loadAll() {
+  [faqs, schedules] = await Promise.all([api('/admin/faqs'), api('/admin/schedules')]);
+  renderStats();
+  renderFAQs();
+  renderSchedules();
+}
+
+// ---------- sign in / out ----------
+
+function showDashboard() {
+  loginView.hidden = true;
+  dashboard.hidden = false;
+  logoutBtn.hidden = false;
+}
+
+function signOut(message) {
+  const token = getToken();
+  if (token) fetch(`${API_BASE}/admin/logout`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+  setToken(null);
+  dashboard.hidden = true;
+  logoutBtn.hidden = true;
+  loginView.hidden = false;
+  document.getElementById('password').value = '';
+  if (message) showFormError(loginError, message);
+  else clearFormError(loginError);
+  document.getElementById('username').focus();
+}
+
+loginForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  if (!username || !password) return showFormError(loginError, 'Enter your username and password.');
+
+  const button = document.getElementById('loginBtn');
+  button.disabled = true;
+  button.textContent = 'Signing in…';
+  try {
+    const response = await fetch(`${API_BASE}/admin/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
     });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(body.error || "Couldn't sign in.");
+    setToken(body.token);
+    clearFormError(loginError);
+    await loadAll();
+    showDashboard();
+  } catch (err) {
+    showFormError(loginError, err.message === 'Failed to fetch' ? "Can't reach the UniBot server." : err.message);
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Sign in';
+  }
+});
+
+logoutBtn.addEventListener('click', () => signOut());
+
+// Resume an existing session on reload.
+if (getToken()) {
+  loadAll()
+    .then(showDashboard)
+    .catch((err) => handleError(err));
+} else {
+  document.getElementById('username').focus();
+}

@@ -2,86 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="adminStyle.css">
-  <title>UniBot - Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UniBot Admin</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="shared.css" />
+  <link rel="stylesheet" href="adminStyle.css" />
+  <script src="theme.js"></script>
 </head>
-<body class="light">
-  
-  <header>
-    <h1>🔧 UniBot Admin</h1>
-    <div class="header-actions">
-      <button id="themeToggle">🌙</button>
-      <button id="backToChat" style="display: none;">Back to Chat</button>
-      <button id="logoutBtn" style="display: none;">Logout</button>
+<body>
+  <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+    <symbol id="i-bot" viewBox="0 0 24 24"><rect x="4" y="8" width="16" height="11" rx="3"/><path d="M12 4v4"/><circle cx="12" cy="3.5" r="0.8"/><path d="M9 13h.01M15 13h.01"/><path d="M2 13v2M22 13v2"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5Z"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4V5Z"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M15 4h4v16h-4M10 8l-4 4 4 4M6 12h10"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-faq" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l10 10-8 8L3 12Z"/><circle cx="7.5" cy="8.5" r="1.2"/></symbol>
+    <symbol id="i-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="avatar"><svg class="icon"><use href="#i-bot" /></svg></span>
+      <div>
+        <h1>UniBot Admin</h1>
+        <p>Manage FAQs and important dates</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="icon-btn theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark mode">
+        <svg class="icon moon"><use href="#i-moon" /></svg>
+        <svg class="icon sun"><use href="#i-sun" /></svg>
+      </button>
+      <a class="btn ghost" href="index.html">
+        <svg class="icon"><use href="#i-chat" /></svg>
+        <span class="hide-sm">Back to chat</span>
+      </a>
+      <button class="btn ghost" id="logoutBtn" type="button" hidden>
+        <svg class="icon"><use href="#i-logout" /></svg>
+        <span class="hide-sm">Sign out</span>
+      </button>
     </div>
   </header>
 
-  <!--Login form-->
-  <div class="login-container" id="loginContainer">
-    <div class="login-form">
-      <h2>Admin Login</h2>
-      <div id="loginError" class="error-message" style="display: none;"></div>
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" id="username" required>
+  <!-- Sign in -->
+  <main class="login" id="loginView">
+    <form class="login-card" id="loginForm" novalidate>
+      <span class="avatar lock"><svg class="icon"><use href="#i-lock" /></svg></span>
+      <h2>Admin sign in</h2>
+      <p class="muted">Only staff who manage UniBot's answers need to sign in here.</p>
+      <div class="form-error" id="loginError" role="alert" hidden></div>
+      <div class="field">
+        <label for="username">Username</label>
+        <input class="input" type="text" id="username" autocomplete="username" required />
       </div>
-      <div class="form-group">
-        <label for="password">Password:</label>
-        <input type="password" id="password" required>
+      <div class="field">
+        <label for="password">Password</label>
+        <input class="input" type="password" id="password" autocomplete="current-password" required />
       </div>
-      <button id="loginBtn" style="width: 100%;">Login</button>
-    </div>
-  </div>
+      <button class="btn" id="loginBtn" type="submit">Sign in</button>
+    </form>
+  </main>
 
-  <!--Admin dashboard-->
-  <div class="admin-container" id="adminContainer" style="display: none;">
-    <div class="admin-header">
-      <h2>FAQ Management</h2>
-      <button id="addFaqBtn">Add New FAQ</button>
-    </div>
-    
-    <div id="faqList" class="faq-grid">
-      <!--FAQs will show here-->
-    </div>
-  </div>
+  <!-- Dashboard -->
+  <main class="dashboard" id="dashboard" hidden>
+    <section class="stats" aria-label="Overview">
+      <div class="stat"><span class="stat-icon"><svg class="icon"><use href="#i-faq" /></svg></span><div><p class="stat-value" id="statFaqs">0</p><p class="stat-label">FAQs</p></div></div>
+      <div class="stat"><span class="stat-icon"><svg class="icon"><use href="#i-tag" /></svg></span><div><p class="stat-value" id="statKeywords">0</p><p class="stat-label">Unique keywords</p></div></div>
+      <div class="stat"><span class="stat-icon accent"><svg class="icon"><use href="#i-calendar" /></svg></span><div><p class="stat-value" id="statUpcoming">0</p><p class="stat-label">Upcoming dates</p></div></div>
+    </section>
 
-  <!--FAQ Modal-->
-  <div id="faqModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3 id="modalTitle">Add FAQ</h3>
-        <span class="close" id="closeModal">&times;</span>
-      </div>
-      
-      <div id="modalError" class="error-message" style="display: none;"></div>
-      
-      <div class="form-group">
-        <label for="faqQuestion">Question:</label>
-        <input type="text" id="faqQuestion" required>
-      </div>
-      
-      <div class="form-group">
-        <label for="faqAnswer">Answer:</label>
-        <textarea id="faqAnswer" rows="4" required></textarea>
-      </div>
-      
-      <div class="form-group">
-        <label for="keywordInput">Keywords:</label>
-        <input type="text" id="keywordInput" placeholder="Type keyword and press Enter">
-        <div id="keywordsList" class="keywords-input"></div>
-      </div>
-      
-      <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-        <button id="cancelBtn" class="btn-secondary">Cancel</button>
-        <button id="saveFaqBtn">Save FAQ</button>
-      </div>
+    <div class="tabs" role="tablist" aria-label="Content">
+      <button class="tab" type="button" role="tab" id="tabFaqs" aria-controls="panelFaqs" aria-selected="true">FAQs</button>
+      <button class="tab" type="button" role="tab" id="tabSchedules" aria-controls="panelSchedules" aria-selected="false" tabindex="-1">Schedules</button>
     </div>
-  </div>
 
-  <footer>
-    <p>&copy; 2025 UniBot Admin | Developed by bugblazer</p>
-  </footer>
+    <section class="panel" id="panelFaqs" role="tabpanel" aria-labelledby="tabFaqs">
+      <div class="toolbar">
+        <div class="search">
+          <svg class="icon"><use href="#i-search" /></svg>
+          <label class="sr-only" for="faqSearch">Search FAQs</label>
+          <input class="input" type="search" id="faqSearch" placeholder="Search questions, answers or keywords" />
+        </div>
+        <button class="btn" id="addFaqBtn" type="button"><svg class="icon"><use href="#i-plus" /></svg>New FAQ</button>
+      </div>
+      <p class="result-count" id="faqCount" aria-live="polite"></p>
+      <ul class="list" id="faqList"></ul>
+    </section>
+
+    <section class="panel" id="panelSchedules" role="tabpanel" aria-labelledby="tabSchedules" hidden>
+      <div class="toolbar">
+        <p class="muted">Dated events students can ask about, like deadlines, tests and orientation.</p>
+        <button class="btn" id="addScheduleBtn" type="button"><svg class="icon"><use href="#i-plus" /></svg>New date</button>
+      </div>
+      <ul class="list" id="scheduleList"></ul>
+    </section>
+  </main>
+
+  <!-- FAQ editor -->
+  <dialog class="dialog" id="faqDialog" aria-labelledby="faqDialogTitle">
+    <form id="faqForm" novalidate>
+      <header class="dialog-header">
+        <h2 id="faqDialogTitle">New FAQ</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x" /></svg></button>
+      </header>
+      <div class="dialog-body">
+        <div class="form-error" id="faqError" role="alert" hidden></div>
+        <div class="field">
+          <label for="faqQuestion">Question</label>
+          <input class="input" id="faqQuestion" maxlength="300" required />
+        </div>
+        <div class="field">
+          <label for="faqAnswer">Answer</label>
+          <textarea class="input" id="faqAnswer" rows="4" maxlength="2000" required></textarea>
+        </div>
+        <div class="field">
+          <label for="faqKeywordInput">Keywords</label>
+          <div class="chip-input" id="faqKeywords">
+            <ul class="chip-list" aria-label="Keywords"></ul>
+            <input id="faqKeywordInput" placeholder="Type a keyword, then Enter" />
+          </div>
+          <p class="help">UniBot picks the FAQ whose keywords appear most in a student's question.</p>
+        </div>
+      </div>
+      <footer class="dialog-footer">
+        <button class="btn ghost" type="button" data-close>Cancel</button>
+        <button class="btn" type="submit">Save FAQ</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Schedule editor -->
+  <dialog class="dialog" id="scheduleDialog" aria-labelledby="scheduleDialogTitle">
+    <form id="scheduleForm" novalidate>
+      <header class="dialog-header">
+        <h2 id="scheduleDialogTitle">New date</h2>
+        <button class="icon-btn" type="button" data-close aria-label="Close"><svg class="icon"><use href="#i-x" /></svg></button>
+      </header>
+      <div class="dialog-body">
+        <div class="form-error" id="scheduleError" role="alert" hidden></div>
+        <div class="field">
+          <label for="scheduleTitle">Title</label>
+          <input class="input" id="scheduleTitle" maxlength="300" placeholder="Fee submission deadline" required />
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="scheduleDate">Date</label>
+            <input class="input" type="date" id="scheduleDate" required />
+          </div>
+          <div class="field">
+            <label for="scheduleTime">Time <span class="optional">(optional)</span></label>
+            <input class="input" id="scheduleTime" maxlength="40" placeholder="5:00 PM" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="scheduleDetails">Details <span class="optional">(optional)</span></label>
+          <textarea class="input" id="scheduleDetails" rows="3" maxlength="2000"></textarea>
+        </div>
+        <div class="field">
+          <label for="scheduleKeywordInput">Keywords</label>
+          <div class="chip-input" id="scheduleKeywords">
+            <ul class="chip-list" aria-label="Keywords"></ul>
+            <input id="scheduleKeywordInput" placeholder="Type a keyword, then Enter" />
+          </div>
+          <p class="help">A student asking "when is the fee deadline?" matches keywords like fee and deadline.</p>
+        </div>
+      </div>
+      <footer class="dialog-footer">
+        <button class="btn ghost" type="button" data-close>Cancel</button>
+        <button class="btn" type="submit">Save date</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Delete confirmation -->
+  <dialog class="dialog small" id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+    <div class="dialog-body">
+      <h2 id="confirmTitle">Delete this FAQ?</h2>
+      <p class="muted" id="confirmText">Students won't get this answer anymore. This can't be undone.</p>
+    </div>
+    <footer class="dialog-footer">
+      <button class="btn ghost" type="button" data-close>Cancel</button>
+      <button class="btn danger" type="button" id="confirmDelete">Delete</button>
+    </footer>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
   <script src="adminScript.js"></script>
 </body>
 </html>

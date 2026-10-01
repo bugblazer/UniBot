@@ -1,0 +1,10 @@
+# Build output
+unibot
+unibot.exe
+
+# Downloaded by backend/setup.sh
+backend/third_party/asio/
+backend/third_party/asio.hpp
+
+# Admin credentials (see backend/data/admin.example.txt)
+backend/data/admin.txt
