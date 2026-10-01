@@ -52,10 +52,20 @@ Then start the server from the repository root and open <http://localhost:18080>
 ./unibot          # ./unibot.exe on Windows
 ```
 
+### With Docker
+
+```bash
+docker build -t unibot .
+docker run -d --name unibot --restart unless-stopped -p 18080:18080   -e UNIBOT_ADMIN_USER=admin -e UNIBOT_ADMIN_PASS='a-strong-password'   -v "$PWD/backend/data:/app/backend/data" unibot
+```
+
+The volume keeps FAQ and schedule edits when the container is rebuilt.
+
 | Variable | Default | Purpose |
 |---|---|---|
 | `UNIBOT_PORT` | `18080` | Port to listen on |
 | `UNIBOT_CONTACT` | A generic "contact the admissions office" message | Reply when no FAQ matches |
+| `TZ` | System time zone | Decides which schedule dates count as upcoming, e.g. `Asia/Karachi` |
 
 ## How it works
 

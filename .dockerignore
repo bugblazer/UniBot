@@ -1,0 +1,7 @@
+.git
+screenshots
+unibot
+unibot.exe
+backend/third_party/asio
+backend/third_party/asio.hpp
+backend/data/admin.txt
