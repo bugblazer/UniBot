@@ -1,5 +1,7 @@
 # Build stage: compile the server (Asio headers are fetched by setup.sh).
-FROM gcc:14 AS build
+# debian-slim + g++ is far smaller than the official gcc image and shares layers with the runtime.
+FROM debian:bookworm-slim AS build
+RUN apt-get update  && apt-get install -y --no-install-recommends g++ curl ca-certificates  && rm -rf /var/lib/apt/lists/*
 WORKDIR /src
 COPY backend ./backend
 RUN bash backend/setup.sh \
