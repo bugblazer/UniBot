@@ -5,7 +5,9 @@ university's own FAQ list. Admins manage the questions, keywords and important d
 tests, orientation) from a web dashboard.
 
 UniBot matches **keywords**, not AI, so answers are fast, predictable and always the official
-wording. It started as my Programming Fundamentals project in my second semester.
+wording.
+
+**Live:** https://unibot.bugblazer.dev (signing in needs a @ucp.edu.pk email) · Built by [bugblazer](https://bugblazer.dev)
 
 ![UniBot chat](screenshots/chat-welcome.png)
 
