@@ -1,5 +1,7 @@
 # UniBot
 
+![UniBot: answers in seconds, not days](screenshots/title.png)
+
 A university FAQ assistant. Students ask questions in a chat and UniBot answers from the
 university's own FAQ list. Admins manage the questions, keywords and important dates (deadlines,
 tests, orientation) from a web dashboard.
